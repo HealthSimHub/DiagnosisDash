@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnosis Dash — HealthSim Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:    #0F2240;
+  --navy2:   #162d52;
+  --teal:    #0D7377;
+  --teal2:   #0fb8a8;
+  --teallt:  #E0F4F4;
+  --gold:    #E8A020;
+  --goldlt:  #FEF3DC;
+  --green:   #065F46;
+  --greenlt: #ECFDF5;
+  --rose:    #C0392B;
+  --roselt:  #FDECEA;
+  --purple:  #6D28D9;
+  --purplt:  #F5F3FF;
+  --slate:   #475569;
+  --border:  #E2E8F0;
+  --bg:      #F8FAFB;
+  --white:   #FFFFFF;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--navy);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--navy);
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(15,34,64,.15);
+}
+.brand { font-family: 'DM Serif Display', serif; font-size: 15px; color: var(--teal2); }
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+}
+.timer-display {
+  font-family: 'DM Mono', monospace;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--teal2);
+  min-width: 64px;
+  text-align: center;
+  background: rgba(15,184,168,.1);
+  border: 1px solid rgba(15,184,168,.2);
+  border-radius: 8px;
+  padding: 4px 12px;
+  transition: color .3s;
+}
+.timer-display.warning { color: var(--gold); border-color: rgba(232,160,32,.3); background: rgba(232,160,32,.08); }
+.timer-display.danger { color: #fc8b80; border-color: rgba(192,57,43,.3); background: rgba(192,57,43,.08); }
+.header-right { display: flex; gap: 8px; align-items: center; }
+.btn-sm {
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.6);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+}
+.btn-sm:hover { background: rgba(255,255,255,.12); color: white; }
+.btn-sm.primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: white;
+}
+.btn-sm.primary:hover { background: var(--teal2); }
+
+/* ── SETUP SCREEN ── */
+.setup-screen {
+  max-width: 780px;
+  margin: 40px auto;
+  padding: 0 24px 60px;
+}
+.setup-hero {
+  background: var(--navy);
+  border-radius: 20px;
+  padding: 40px 44px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.setup-hero::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(13,115,119,.18);
+}
+.setup-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: 60px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: rgba(232,160,32,.10);
+}
+.setup-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--teal2);
+  margin-bottom: 10px;
+  position: relative;
+}
+.setup-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 38px;
+  color: white;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  position: relative;
+}
+.setup-title em { color: var(--gold); font-style: italic; }
+.setup-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,.5);
+  line-height: 1.6;
+  max-width: 460px;
+  position: relative;
+}
+
+.setup-section {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.setup-section-header {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.setup-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+.setup-section-body { padding: 18px 22px; }
+
+/* Category grid */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.cat-option {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+}
+.cat-option:hover { border-color: var(--teal); background: rgba(13,115,119,.03); }
+.cat-option.selected {
+  border-color: var(--teal);
+  background: rgba(13,115,119,.05);
+}
+.cat-check {
+  position: absolute;
+  top: 8px; right: 10px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--teal);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: white;
+}
+.cat-option.selected .cat-check { display: flex; }
+.cat-icon { font-size: 22px; margin-bottom: 6px; }
+.cat-name { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
+.cat-count { font-size: 11px; color: var(--slate); }
+
+/* Teams setup */
+.teams-setup {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.team-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.team-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.team-input {
+  border: none;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  outline: none;
+  width: 100px;
+}
+
+/* Timer options */
+.timer-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+.timer-opt {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate);
+  cursor: pointer;
+  transition: all .2s;
+  font-family: 'DM Sans', sans-serif;
+  background: transparent;
+}
+.timer-opt:hover { border-color: var(--teal); color: var(--teal); }
+.timer-opt.selected { border-color: var(--teal); color: var(--teal); background: rgba(13,115,119,.05); }
+
+.start-btn {
+  width: 100%;
+  background: var(--navy);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 18px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .5px;
+  margin-top: 8px;
+}
+.start-btn:hover { background: var(--teal); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(13,115,119,.3); }
+
+/* ── GAME SCREEN ── */
+.game-screen {
+  display: none;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 24px 60px;
+}
+.game-screen.active { display: block; }
+.setup-screen.hidden { display: none; }
+
+/* Teams scoreboard */
+.scoreboard {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.score-card {
+  flex: 1;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all .2s;
+  cursor: pointer;
+}
+.score-card.active {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(13,115,119,.1);
+}
+.score-card.winner {
+  border-color: var(--gold);
+  background: var(--goldlt);
+}
+.sc-left { display: flex; align-items: center; gap: 10px; }
+.sc-dot { width: 12px; height: 12px; border-radius: 50%; }
+.sc-name { font-size: 13px; font-weight: 700; color: var(--navy); }
+.sc-status { font-size: 10px; color: var(--slate); margin-top: 1px; }
+.sc-score {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  color: var(--navy);
+}
+.score-card.active .sc-score { color: var(--teal); }
+.score-card.winner .sc-score { color: var(--gold); }
+
+/* Round info */
+.round-bar {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.round-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.round-badge {
+  background: var(--navy);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.round-cat {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.round-sub { font-size: 11px; color: var(--slate); margin-top: 1px; }
+.round-actions { display: flex; gap: 8px; }
+
+/* Card area */
+.card-area-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--slate);
+  margin-bottom: 10px;
+}
+.game-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.card-column {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.col-header {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.col-icon { font-size: 16px; }
+.col-title { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate); }
+.col-count {
+  margin-left: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--slate);
+  font-family: 'DM Mono', monospace;
+}
+
+.cards-list {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 200px;
+}
+
+/* Individual game cards */
+.game-card {
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: all .2s;
+  border: 2px solid transparent;
+  position: relative;
+  user-select: none;
+}
+
+/* Term cards */
+.term-card {
+  background: var(--navy);
+  color: white;
+  border-color: rgba(255,255,255,.08);
+}
+.term-card:hover { background: var(--navy2); transform: translateX(2px); }
+.term-card.selected {
+  border-color: var(--teal2);
+  box-shadow: 0 0 0 2px rgba(15,184,168,.2);
+}
+
+/* Answer cards */
+.answer-card {
+  background: var(--bg);
+  color: var(--navy);
+  border-color: var(--border);
+}
+.answer-card:hover { border-color: var(--teal); background: rgba(13,115,119,.04); transform: translateX(-2px); }
+.answer-card.selected {
+  border-color: var(--gold);
+  background: var(--goldlt);
+  box-shadow: 0 0 0 2px rgba(232,160,32,.2);
+}
+
+/* Matched pair */
+.game-card.matched {
+  opacity: .45;
+  cursor: default;
+  transform: none !important;
+}
+.game-card.matched.correct {
+  background: rgba(6,95,70,.08) !important;
+  border-color: rgba(6,95,70,.3) !important;
+  color: var(--green) !important;
+}
+.game-card.wrong-flash {
+  animation: wrongFlash .4s ease-out;
+}
+@keyframes wrongFlash {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* ── RESULTS OVERLAY ── */
+.results-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,34,64,.92);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.results-overlay.show { display: flex; }
+.results-modal {
+  background: white;
+  border-radius: 24px;
+  padding: 44px 48px;
+  max-width: 520px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.results-modal::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--teal), var(--teal2));
+}
+.results-emoji { font-size: 56px; margin-bottom: 12px; }
+.results-winner-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.results-winner-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+.results-sub { font-size: 14px; color: var(--slate); margin-bottom: 24px; line-height: 1.5; }
+.results-scores {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.rs-chip {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 18px;
+  text-align: center;
+}
+.rs-name { font-size: 11px; font-weight: 700; color: var(--slate); letter-spacing: 1px; text-transform: uppercase; }
+.rs-score { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--navy); }
+.rs-chip.winner-chip {
+  background: var(--goldlt);
+  border-color: var(--gold);
+}
+.rs-chip.winner-chip .rs-score { color: var(--gold); }
+.results-btns { display: flex; gap: 10px; justify-content: center; }
+.results-btn {
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  border: none;
+  transition: all .2s;
+}
+.results-btn.primary { background: var(--navy); color: white; }
+.results-btn.primary:hover { background: var(--teal); }
+.results-btn.secondary { background: var(--bg); color: var(--slate); border: 1px solid var(--border); }
+.results-btn.secondary:hover { background: var(--border); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--navy);
+  border: 1px solid rgba(15,184,168,.3);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  z-index: 300;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Correct flash overlay */
+.match-flash {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) scale(.5);
+  font-size: 72px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 400;
+  transition: none;
+}
+.match-flash.show {
+  animation: matchPop .6s ease-out forwards;
+}
+@keyframes matchPop {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.5); }
+  40% { opacity: 1; transform: translate(-50%,-50%) scale(1.2); }
+  70% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.4); }
+}
+</style>
+</head>
+<body>
+
+<div class="match-flash" id="matchFlash">✓</div>
+
+<!-- HEADER -->
+<div class="header">
+  <span class="brand">HealthSim Hub</span>
+  <div class="header-center">
+    <span class="header-title">🗂 Diagnosis Dash</span>
+    <div class="timer-display" id="timerDisplay">—</div>
+  </div>
+  <div class="header-right">
+    <button class="btn-sm" onclick="goSetup()">← Setup</button>
+    <button class="btn-sm primary" id="btnStartTimer" onclick="startTimer()" style="display:none">▶ Start Timer</button>
+    <button class="btn-sm" id="btnNextRound" onclick="nextRound()" style="display:none">Next Round →</button>
+  </div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div class="setup-screen" id="setupScreen">
+
+  <div class="setup-hero">
+    <div class="setup-eyebrow">HealthSim Hub · Review Game</div>
+    <div class="setup-title">Diagnosis <em>Dash</em></div>
+    <div class="setup-sub">Teams race to match terms to their answers. First team to sort everything correctly wins the round. Choose your categories and go.</div>
+  </div>
+
+  <!-- Categories -->
+  <div class="setup-section">
+    <div class="setup-section-header">
+      <span class="setup-section-title">Choose Categories</span>
+      <span style="font-size:11px;color:var(--slate)">Select 1 or more</span>
+    </div>
+    <div class="setup-section-body">
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+  </div>
+
+  <!-- Teams -->
+  <div class="setup-section">
+    <div class="setup-section-header">
+      <span class="setup-section-title">Teams</span>
+    </div>
+    <div class="setup-section-body">
+      <div class="teams-setup">
+        <div class="team-input-wrap">
+          <div class="team-dot" style="background:#0D7377"></div>
+          <input class="team-input" id="team1name" value="Team 1" maxlength="14">
+        </div>
+        <div class="team-input-wrap">
+          <div class="team-dot" style="background:#E8A020"></div>
+          <input class="team-input" id="team2name" value="Team 2" maxlength="14">
+        </div>
+        <div class="team-input-wrap">
+          <div class="team-dot" style="background:#6D28D9"></div>
+          <input class="team-input" id="team3name" value="Team 3" maxlength="14">
+        </div>
+        <div class="team-input-wrap">
+          <div class="team-dot" style="background:#C0392B"></div>
+          <input class="team-input" id="team4name" value="Team 4" maxlength="14">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timer -->
+  <div class="setup-section">
+    <div class="setup-section-header">
+      <span class="setup-section-title">Round Timer</span>
+    </div>
+    <div class="setup-section-body">
+      <div class="timer-opts">
+        <button class="timer-opt selected" data-sec="0" onclick="selectTimer(this, 0)">No Timer</button>
+        <button class="timer-opt" data-sec="60" onclick="selectTimer(this, 60)">1:00</button>
+        <button class="timer-opt" data-sec="90" onclick="selectTimer(this, 90)">1:30</button>
+        <button class="timer-opt" data-sec="120" onclick="selectTimer(this, 120)">2:00</button>
+        <button class="timer-opt" data-sec="180" onclick="selectTimer(this, 180)">3:00</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">Start the Dash →</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="game-screen" id="gameScreen">
+
+  <!-- Scoreboard -->
+  <div class="scoreboard" id="scoreboard"></div>
+
+  <!-- Round bar -->
+  <div class="round-bar">
+    <div class="round-info">
+      <span class="round-badge" id="roundBadge">Round 1</span>
+      <div>
+        <div class="round-cat" id="roundCat">—</div>
+        <div class="round-sub" id="roundSub">Match the term to its answer</div>
+      </div>
+    </div>
+    <div class="round-actions">
+      <button class="btn-sm" onclick="shuffleCurrentRound()">🔀 Shuffle</button>
+    </div>
+  </div>
+
+  <!-- Cards -->
+  <div class="game-layout">
+    <div class="card-column">
+      <div class="col-header">
+        <span class="col-icon">🏷</span>
+        <span class="col-title">Terms / Questions</span>
+        <span class="col-count" id="termCount">0</span>
+      </div>
+      <div class="cards-list" id="termsList"></div>
+    </div>
+    <div class="card-column">
+      <div class="col-header">
+        <span class="col-icon">💡</span>
+        <span class="col-title">Answers / Meanings</span>
+        <span class="col-count" id="ansCount">0</span>
+      </div>
+      <div class="cards-list" id="ansList"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- RESULTS OVERLAY -->
+<div class="results-overlay" id="resultsOverlay">
+  <div class="results-modal">
+    <div class="results-emoji" id="resultsEmoji">🏆</div>
+    <div class="results-winner-label">Round Winner</div>
+    <div class="results-winner-name" id="resultsWinner">—</div>
+    <div class="results-sub" id="resultsSub">First team to match all pairs!</div>
+    <div class="results-scores" id="resultsScores"></div>
+    <div class="results-btns">
+      <button class="results-btn primary" onclick="closeResults(); nextRound()">Next Round →</button>
+      <button class="results-btn secondary" onclick="closeResults()">Keep Playing</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// QUESTION BANK
+// ══════════════════════════════════════════
+const CATEGORIES = [
+  {
+    id: 'abbreviations',
+    name: 'Medical Abbreviations',
+    icon: '🔤',
+    pairs: [
+      { term: 'BP', answer: 'Blood Pressure' },
+      { term: 'PRN', answer: 'As needed (pro re nata)' },
+      { term: 'NPO', answer: 'Nothing by mouth' },
+      { term: 'STAT', answer: 'Immediately' },
+      { term: 'BID', answer: 'Twice a day' },
+      { term: 'TID', answer: 'Three times a day' },
+      { term: 'QID', answer: 'Four times a day' },
+      { term: 'SOB', answer: 'Shortness of breath' },
+      { term: 'Hx', answer: 'History' },
+      { term: 'Dx', answer: 'Diagnosis' },
+      { term: 'Rx', answer: 'Prescription / Treatment' },
+      { term: 'cc', answer: 'Chief Complaint' },
+    ]
+  },
+  {
+    id: 'phlebotomy',
+    name: 'Phlebotomy Tubes',
+    icon: '🩸',
+    pairs: [
+      { term: 'Lavender / Purple tube', answer: 'CBC, A1C — contains EDTA' },
+      { term: 'Light Blue tube', answer: 'PT, PTT, INR — sodium citrate' },
+      { term: 'Gold / SST tube', answer: 'Serum chemistry — clot activator + gel' },
+      { term: 'Green tube', answer: 'Electrolytes, ammonia — heparin' },
+      { term: 'Gray tube', answer: 'Glucose, GTT — sodium fluoride' },
+      { term: 'Red tube', answer: 'Serum chemistry — no additive' },
+      { term: 'Yellow / SPS tube', answer: 'Blood cultures — drawn FIRST' },
+      { term: 'Light Green (PST)', answer: 'STAT chemistry — plasma separator' },
+    ]
+  },
+  {
+    id: 'vitals',
+    name: 'Vital Signs',
+    icon: '💓',
+    pairs: [
+      { term: 'Normal adult pulse', answer: '60–100 bpm' },
+      { term: 'Normal adult BP', answer: 'Less than 120/80 mmHg' },
+      { term: 'Normal adult temp (oral)', answer: '97.8–99.1°F (avg 98.6°F)' },
+      { term: 'Normal adult RR', answer: '12–20 breaths/min' },
+      { term: 'Normal SpO2', answer: '95–100%' },
+      { term: 'Hypertension Stage 1', answer: 'BP 130–139 / 80–89' },
+      { term: 'Hypertension Stage 2', answer: 'BP ≥ 140 / ≥ 90' },
+      { term: 'Hypothermia threshold', answer: 'Below 95°F (35°C)' },
+      { term: 'Tachycardia', answer: 'Heart rate above 100 bpm' },
+      { term: 'Bradycardia', answer: 'Heart rate below 60 bpm' },
+    ]
+  },
+  {
+    id: 'billing',
+    name: 'Billing & Coding',
+    icon: '💳',
+    pairs: [
+      { term: 'CPT code', answer: 'Procedure code — what was done' },
+      { term: 'ICD-10-CM code', answer: 'Diagnosis code — why it was done' },
+      { term: 'HCPCS code', answer: 'Supplies, equipment, and services' },
+      { term: 'EOB', answer: 'Explanation of Benefits — from insurer' },
+      { term: 'Copay', answer: 'Fixed amount patient pays at visit' },
+      { term: 'Deductible', answer: 'Amount patient pays before insurance kicks in' },
+      { term: 'Prior Authorization', answer: 'Pre-approval from insurer before service' },
+      { term: 'ABN', answer: 'Advance Beneficiary Notice — Medicare waiver' },
+      { term: 'Superbill', answer: 'Encounter form listing diagnoses and procedures' },
+    ]
+  },
+  {
+    id: 'infection',
+    name: 'Infection Control',
+    icon: '🧤',
+    pairs: [
+      { term: 'Standard Precautions', answer: 'Used with ALL patients regardless of diagnosis' },
+      { term: 'Airborne precautions', answer: 'TB, measles, varicella — N95 mask required' },
+      { term: 'Droplet precautions', answer: 'Flu, strep — surgical mask within 3 feet' },
+      { term: 'Contact precautions', answer: 'MRSA, C. diff — gown and gloves' },
+      { term: 'Medical asepsis', answer: 'Reduces pathogens — clean technique' },
+      { term: 'Surgical asepsis', answer: 'Eliminates ALL organisms — sterile technique' },
+      { term: 'Fomite', answer: 'Inanimate object that carries and transmits infection' },
+      { term: 'Vector', answer: 'Living organism that transmits disease (e.g. mosquito)' },
+    ]
+  },
+  {
+    id: 'medical_terms',
+    name: 'Medical Terms',
+    icon: '🧬',
+    pairs: [
+      { term: 'Hyper-', answer: 'Above normal / excessive' },
+      { term: 'Hypo-', answer: 'Below normal / deficient' },
+      { term: '-itis', answer: 'Inflammation' },
+      { term: '-ectomy', answer: 'Surgical removal' },
+      { term: '-oscopy', answer: 'Visual examination' },
+      { term: '-plasty', answer: 'Surgical repair or reconstruction' },
+      { term: 'brady-', answer: 'Slow' },
+      { term: 'tachy-', answer: 'Fast / rapid' },
+      { term: '-algia', answer: 'Pain' },
+      { term: '-pnea', answer: 'Breathing' },
+      { term: 'hemo-', answer: 'Blood' },
+      { term: 'cyto-', answer: 'Cell' },
+    ]
+  },
+];
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let selectedCats = ['abbreviations'];
+let teams = [];
+let activeTeam = 0;
+let timerSec = 0;
+let timerInterval = null;
+let timerRemaining = 0;
+let rounds = [];
+let currentRound = 0;
+let selectedTerm = null;
+let selectedAns = null;
+let matchedCount = 0;
+let totalPairs = 0;
+let roundPairs = [];
+
+// ══════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════
+function initSetup() {
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = CATEGORIES.map(c => `
+    <div class="cat-option ${selectedCats.includes(c.id) ? 'selected' : ''}" onclick="toggleCat('${c.id}', this)">
+      <div class="cat-check">✓</div>
+      <div class="cat-icon">${c.icon}</div>
+      <div class="cat-name">${c.name}</div>
+      <div class="cat-count">${c.pairs.length} pairs</div>
+    </div>
+  `).join('');
+}
+
+function toggleCat(id, el) {
+  if (selectedCats.includes(id)) {
+    if (selectedCats.length === 1) { showToast('Select at least one category.'); return; }
+    selectedCats = selectedCats.filter(c => c !== id);
+    el.classList.remove('selected');
+  } else {
+    selectedCats.push(id);
+    el.classList.add('selected');
+  }
+}
+
+function selectTimer(el, sec) {
+  document.querySelectorAll('.timer-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  timerSec = sec;
+}
+
+function startGame() {
+  // Build teams
+  const colors = ['#0D7377','#E8A020','#6D28D9','#C0392B'];
+  teams = [1,2,3,4].map(i => ({
+    name: document.getElementById(`team${i}name`).value.trim() || `Team ${i}`,
+    score: 0,
+    color: colors[i-1]
+  }));
+
+  // Build rounds from selected categories
+  rounds = selectedCats.map(id => CATEGORIES.find(c => c.id === id)).filter(Boolean);
+  currentRound = 0;
+  activeTeam = 0;
+
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.add('active');
+
+  loadRound();
+}
+
+function goSetup() {
+  clearInterval(timerInterval);
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('setupScreen').classList.remove('hidden');
+  document.getElementById('timerDisplay').textContent = '—';
+  document.getElementById('timerDisplay').className = 'timer-display';
+  document.getElementById('btnStartTimer').style.display = 'none';
+  document.getElementById('btnNextRound').style.display = 'none';
+}
+
+// ══════════════════════════════════════════
+// GAME
+// ══════════════════════════════════════════
+function loadRound() {
+  clearInterval(timerInterval);
+  selectedTerm = null;
+  selectedAns = null;
+  matchedCount = 0;
+
+  const cat = rounds[currentRound];
+  // Pick up to 6 pairs per round
+  const allPairs = [...cat.pairs];
+  shuffle(allPairs);
+  roundPairs = allPairs.slice(0, 6);
+  totalPairs = roundPairs.length;
+
+  document.getElementById('roundBadge').textContent = `Round ${currentRound + 1} of ${rounds.length}`;
+  document.getElementById('roundCat').textContent = cat.name;
+  document.getElementById('roundSub').textContent = `${cat.icon} Match all ${totalPairs} pairs to win the round`;
+
+  renderScoreboard();
+  renderCards();
+
+  // Timer setup
+  if (timerSec > 0) {
+    timerRemaining = timerSec;
+    updateTimerDisplay();
+    document.getElementById('btnStartTimer').style.display = 'flex';
+  } else {
+    document.getElementById('timerDisplay').textContent = '—';
+    document.getElementById('btnStartTimer').style.display = 'none';
+  }
+  document.getElementById('btnNextRound').style.display = 'none';
+}
+
+function renderScoreboard() {
+  document.getElementById('scoreboard').innerHTML = teams.map((t, i) => `
+    <div class="score-card ${i === activeTeam ? 'active' : ''}" onclick="setActiveTeam(${i})">
+      <div class="sc-left">
+        <div class="sc-dot" style="background:${t.color}"></div>
+        <div>
+          <div class="sc-name">${t.name}</div>
+          <div class="sc-status">${i === activeTeam ? '▶ Active' : 'Click to activate'}</div>
+        </div>
+      </div>
+      <div class="sc-score">${t.score}</div>
+    </div>
+  `).join('');
+}
+
+function setActiveTeam(i) {
+  activeTeam = i;
+  renderScoreboard();
+}
+
+function renderCards() {
+  const terms = [...roundPairs];
+  const answers = [...roundPairs];
+  shuffle(terms);
+  shuffle(answers);
+
+  document.getElementById('termCount').textContent = `${roundPairs.length}`;
+  document.getElementById('ansCount').textContent = `${roundPairs.length}`;
+
+  document.getElementById('termsList').innerHTML = terms.map((p, i) => `
+    <div class="game-card term-card" id="term-${i}" data-pair-id="${roundPairs.indexOf(p)}" onclick="selectTerm(this)">
+      ${p.term}
+    </div>
+  `).join('');
+
+  document.getElementById('ansList').innerHTML = answers.map((p, i) => `
+    <div class="game-card answer-card" id="ans-${i}" data-pair-id="${roundPairs.indexOf(p)}" onclick="selectAnswer(this)">
+      ${p.answer}
+    </div>
+  `).join('');
+}
+
+function shuffleCurrentRound() {
+  // Re-shuffle only unmatched cards
+  const termCards = [...document.querySelectorAll('#termsList .game-card:not(.matched)')];
+  const ansCards = [...document.querySelectorAll('#ansList .game-card:not(.matched)')];
+  const termParent = document.getElementById('termsList');
+  const ansParent = document.getElementById('ansList');
+
+  shuffle(termCards);
+  shuffle(ansCards);
+
+  termCards.forEach(c => termParent.appendChild(c));
+  ansCards.forEach(c => ansParent.appendChild(c));
+  showToast('Cards shuffled!');
+}
+
+function selectTerm(el) {
+  if (el.classList.contains('matched')) return;
+  document.querySelectorAll('.term-card.selected').forEach(c => c.classList.remove('selected'));
+  selectedTerm = el;
+  el.classList.add('selected');
+  tryMatch();
+}
+
+function selectAnswer(el) {
+  if (el.classList.contains('matched')) return;
+  document.querySelectorAll('.answer-card.selected').forEach(c => c.classList.remove('selected'));
+  selectedAns = el;
+  el.classList.add('selected');
+  tryMatch();
+}
+
+function tryMatch() {
+  if (!selectedTerm || !selectedAns) return;
+  const termId = parseInt(selectedTerm.dataset.pairId);
+  const ansId = parseInt(selectedAns.dataset.pairId);
+
+  if (termId === ansId) {
+    // Correct!
+    selectedTerm.classList.remove('selected');
+    selectedAns.classList.remove('selected');
+    selectedTerm.classList.add('matched', 'correct');
+    selectedAns.classList.add('matched', 'correct');
+    selectedTerm.innerHTML = '✓ ' + selectedTerm.innerHTML;
+    selectedAns.innerHTML = '✓ ' + selectedAns.innerHTML;
+    selectedTerm = null;
+    selectedAns = null;
+    matchedCount++;
+    flashMatch();
+
+    if (matchedCount === totalPairs) {
+      setTimeout(roundComplete, 400);
+    }
+  } else {
+    // Wrong
+    selectedTerm.classList.add('wrong-flash');
+    selectedAns.classList.add('wrong-flash');
+    setTimeout(() => {
+      selectedTerm?.classList.remove('selected', 'wrong-flash');
+      selectedAns?.classList.remove('selected', 'wrong-flash');
+      selectedTerm = null;
+      selectedAns = null;
+    }, 400);
+    showToast('Not a match — try again!');
+  }
+}
+
+function roundComplete() {
+  // Award points
+  teams[activeTeam].score += roundPairs.length;
+  clearInterval(timerInterval);
+
+  // Show results
+  showResults();
+}
+
+function showResults() {
+  const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+  const winner = sortedTeams[0];
+
+  document.getElementById('resultsEmoji').textContent = currentRound >= rounds.length - 1 ? '🏆' : '🎯';
+  document.getElementById('resultsWinner').textContent = winner.name;
+  document.getElementById('resultsSub').textContent =
+    currentRound >= rounds.length - 1
+      ? `Final scores — game over!`
+      : `+${roundPairs.length} pts · ${rounds.length - currentRound - 1} round(s) left`;
+
+  document.getElementById('resultsScores').innerHTML = teams.map(t => `
+    <div class="rs-chip ${t.name === winner.name ? 'winner-chip' : ''}">
+      <div class="rs-name">${t.name}</div>
+      <div class="rs-score">${t.score}</div>
+    </div>
+  `).join('');
+
+  // Change button label if last round
+  document.querySelector('.results-btn.primary').textContent =
+    currentRound >= rounds.length - 1 ? '↺ Play Again' : 'Next Round →';
+  document.querySelector('.results-btn.primary').onclick =
+    currentRound >= rounds.length - 1
+      ? () => { closeResults(); goSetup(); }
+      : () => { closeResults(); nextRound(); };
+
+  document.getElementById('resultsOverlay').classList.add('show');
+  renderScoreboard();
+}
+
+function closeResults() {
+  document.getElementById('resultsOverlay').classList.remove('show');
+}
+
+function nextRound() {
+  if (currentRound < rounds.length - 1) {
+    currentRound++;
+    loadRound();
+  } else {
+    showToast('All rounds complete! Check scores above.');
+    document.getElementById('btnNextRound').style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════
+function startTimer() {
+  clearInterval(timerInterval);
+  timerRemaining = timerSec;
+  document.getElementById('btnStartTimer').style.display = 'none';
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    updateTimerDisplay();
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timerDisplay').textContent = '0:00';
+      showToast("⏱ Time's up! Mark the round manually.");
+      document.getElementById('btnNextRound').style.display = 'flex';
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerRemaining / 60);
+  const s = timerRemaining % 60;
+  const el = document.getElementById('timerDisplay');
+  el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  el.className = 'timer-display';
+  if (timerRemaining <= 30) el.classList.add('warning');
+  if (timerRemaining <= 10) el.classList.add('danger');
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function flashMatch() {
+  const el = document.getElementById('matchFlash');
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 700);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// Init
+initSetup();
+</script>
+</body>
+</html>
