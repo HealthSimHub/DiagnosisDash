@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bullseye Board — HealthSim Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:    #0F2240;
+  --navy2:   #162d52;
+  --teal:    #0D7377;
+  --teal2:   #0fb8a8;
+  --teallt:  #E0F4F4;
+  --gold:    #E8A020;
+  --goldlt:  #FEF3DC;
+  --slate:   #475569;
+  --border:  #E2E8F0;
+  --bg:      #F8FAFB;
+  --white:   #FFFFFF;
+  --rose:    #C0392B;
+  --roselt:  #FDECEA;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(13,115,119,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(232,160,32,.10) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+.header {
+  position: relative;
+  z-index: 10;
+  background: rgba(15,34,64,.9);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(8px);
+}
+.brand {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px;
+  color: var(--teal2);
+  letter-spacing: .5px;
+}
+.header-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.score-chip {
+  background: rgba(15,184,168,.12);
+  border: 1px solid rgba(15,184,168,.25);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal2);
+  font-family: 'DM Mono', monospace;
+}
+.reset-btn {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+}
+.reset-btn:hover {
+  background: rgba(255,255,255,.1);
+  color: white;
+}
+
+/* ── MAIN LAYOUT ── */
+.main {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 24px;
+  padding: 28px 32px;
+  min-height: calc(100vh - 64px);
+  align-items: start;
+}
+
+/* ── LEFT: BULLSEYE ── */
+.bullseye-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.bullseye-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  text-align: center;
+}
+
+.bullseye-container {
+  position: relative;
+  width: 380px;
+  height: 380px;
+}
+
+/* Rings */
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .25s cubic-bezier(.34,1.56,.64,1);
+  border: 3px solid rgba(255,255,255,.06);
+}
+.ring:hover { transform: scale(1.03); }
+.ring:active { transform: scale(.97); }
+
+.ring-30 {
+  inset: 0;
+  background: radial-gradient(circle at 40% 35%, rgba(15,34,64,.6), rgba(15,34,64,.95));
+  border-color: rgba(15,184,168,.2);
+  box-shadow: 0 0 40px rgba(13,115,119,.3), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.ring-20 {
+  inset: 70px;
+  background: radial-gradient(circle at 40% 35%, rgba(22,45,82,.7), rgba(15,34,64,.98));
+  border-color: rgba(232,160,32,.3);
+  box-shadow: 0 0 30px rgba(232,160,32,.2), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.ring-10 {
+  inset: 140px;
+  background: radial-gradient(circle at 40% 35%, var(--teal), var(--teal2));
+  border-color: rgba(255,255,255,.3);
+  box-shadow: 0 0 30px rgba(15,184,168,.5), 0 0 60px rgba(15,184,168,.2);
+  cursor: pointer;
+}
+
+/* Ring labels */
+.ring-pts {
+  position: absolute;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  color: rgba(255,255,255,.25);
+  pointer-events: none;
+  line-height: 1;
+}
+.ring-30 .ring-pts {
+  font-size: 72px;
+  top: 18px;
+  left: 22px;
+}
+.ring-20 .ring-pts {
+  font-size: 48px;
+  top: 12px;
+  left: 14px;
+}
+.ring-10 .ring-pts {
+  font-size: 52px;
+  color: rgba(255,255,255,.55);
+  font-style: normal;
+  font-family: 'DM Mono', monospace;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 28px;
+  letter-spacing: -1px;
+}
+
+.ring-badge {
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.ring-30 .ring-badge { color: var(--teal2); border-color: rgba(15,184,168,.3); }
+.ring-20 .ring-badge { color: var(--gold); border-color: rgba(232,160,32,.35); }
+
+/* Click pulse */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(15,184,168,.5); }
+  70% { box-shadow: 0 0 0 20px rgba(15,184,168,0); }
+  100% { box-shadow: 0 0 0 0 rgba(15,184,168,0); }
+}
+.ring.pulse { animation: pulse-ring .5s ease-out; }
+
+/* ── TEAM SCORES ── */
+.teams-bar {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 380px;
+}
+.team-card {
+  flex: 1;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+.team-card.active {
+  border-color: rgba(15,184,168,.4);
+  background: rgba(15,184,168,.08);
+}
+.team-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.4);
+  margin-bottom: 4px;
+}
+.team-card.active .team-name { color: var(--teal2); }
+.team-score {
+  font-family: 'DM Serif Display', serif;
+  font-size: 30px;
+  color: white;
+  line-height: 1;
+}
+.team-card.active .team-score { color: var(--teal2); }
+
+/* Instructions */
+.instructions {
+  font-size: 11.5px;
+  color: rgba(255,255,255,.35);
+  text-align: center;
+  max-width: 340px;
+  line-height: 1.6;
+}
+.instructions strong { color: rgba(255,255,255,.6); }
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Question Card */
+.question-card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 200px;
+}
+.qc-header {
+  background: rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.qc-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+}
+.qc-pts-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: none;
+}
+.qc-pts-badge.pts-30 { background: rgba(15,184,168,.15); color: var(--teal2); border: 1px solid rgba(15,184,168,.3); }
+.qc-pts-badge.pts-20 { background: rgba(232,160,32,.15); color: var(--gold); border: 1px solid rgba(232,160,32,.3); }
+.qc-pts-badge.pts-10 { background: rgba(15,184,168,.2); color: #fff; border: 1px solid rgba(255,255,255,.2); }
+.qc-pts-badge.show { display: block; }
+
+.qc-body {
+  padding: 24px 20px 20px;
+}
+.qc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  text-align: center;
+}
+.qc-empty-icon {
+  font-size: 36px;
+  opacity: .4;
+}
+.qc-empty-text {
+  font-size: 13px;
+  color: rgba(255,255,255,.3);
+  line-height: 1.6;
+}
+
+.qc-category {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--teal2);
+  margin-bottom: 10px;
+  display: none;
+}
+.qc-category.show { display: block; }
+
+.qc-question {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: white;
+  line-height: 1.4;
+  margin-bottom: 20px;
+  display: none;
+}
+.qc-question.show { display: block; }
+
+.qc-answer-wrap {
+  display: none;
+}
+.qc-answer-wrap.show { display: block; }
+
+.qc-answer {
+  background: rgba(15,184,168,.08);
+  border: 1px solid rgba(15,184,168,.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--teal2);
+  line-height: 1.5;
+  margin-bottom: 12px;
+  display: none;
+}
+.qc-answer.show { display: block; }
+
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.btn-reveal {
+  background: var(--teal);
+  color: white;
+}
+.btn-reveal:hover { background: var(--teal2); }
+.btn-correct {
+  background: rgba(6,95,70,.8);
+  border: 1px solid rgba(15,184,168,.3);
+  color: var(--teal2);
+  display: none;
+}
+.btn-correct.show { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-correct:hover { background: rgba(6,95,70,1); }
+.btn-wrong {
+  background: rgba(192,57,43,.2);
+  border: 1px solid rgba(192,57,43,.3);
+  color: #fc8b80;
+  display: none;
+}
+.btn-wrong.show { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-wrong:hover { background: rgba(192,57,43,.35); }
+.btn-next {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.6);
+  display: none;
+}
+.btn-next.show { display: block; }
+.btn-next:hover { background: rgba(255,255,255,.1); color: white; }
+
+/* ── QUESTION BANK EDITOR ── */
+.bank-card {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.bank-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.bank-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.5);
+}
+.bank-toggle {
+  font-size: 18px;
+  color: rgba(255,255,255,.3);
+  transition: transform .2s;
+}
+.bank-toggle.open { transform: rotate(180deg); }
+
+.bank-body {
+  padding: 16px;
+  display: none;
+}
+.bank-body.open { display: block; }
+
+.bank-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.bank-tab {
+  flex: 1;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  padding: 6px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,.35);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+  text-align: center;
+}
+.bank-tab.active-pts30 { background: rgba(15,184,168,.12); border-color: rgba(15,184,168,.3); color: var(--teal2); }
+.bank-tab.active-pts20 { background: rgba(232,160,32,.12); border-color: rgba(232,160,32,.3); color: var(--gold); }
+.bank-tab.active-pts10 { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: white; }
+
+.q-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 12px;
+}
+.q-list::-webkit-scrollbar { width: 3px; }
+.q-list::-webkit-scrollbar-track { background: transparent; }
+.q-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+
+.q-item {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.q-item-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,.25);
+  min-width: 18px;
+  padding-top: 1px;
+}
+.q-item-text {
+  font-size: 11.5px;
+  color: rgba(255,255,255,.6);
+  line-height: 1.4;
+  flex: 1;
+}
+.q-item-ans {
+  font-size: 10.5px;
+  color: var(--teal2);
+  line-height: 1.3;
+  margin-top: 3px;
+  opacity: .8;
+}
+
+.add-q-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.add-q-form input, .add-q-form select {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color .2s;
+}
+.add-q-form input:focus { border-color: rgba(15,184,168,.4); }
+.add-q-form input::placeholder { color: rgba(255,255,255,.25); }
+.add-q-form select option { background: var(--navy2); }
+.btn-add {
+  background: var(--teal);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background .2s;
+}
+.btn-add:hover { background: var(--teal2); }
+
+/* ── HOW TO PLAY ── */
+.how-card {
+  background: rgba(232,160,32,.05);
+  border: 1px solid rgba(232,160,32,.15);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.how-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.how-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.how-list li {
+  font-size: 12px;
+  color: rgba(255,255,255,.5);
+  padding-left: 16px;
+  position: relative;
+  line-height: 1.5;
+}
+.how-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 10px;
+  top: 1px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--navy2);
+  border: 1px solid rgba(15,184,168,.3);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  z-index: 100;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── POINT FLASH ── */
+.point-flash {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%) scale(.5);
+  font-family: 'DM Serif Display', serif;
+  font-size: 96px;
+  font-style: italic;
+  color: var(--teal2);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 200;
+  text-shadow: 0 0 60px rgba(15,184,168,.6);
+  transition: none;
+}
+.point-flash.show {
+  animation: flashIn .7s ease-out forwards;
+}
+@keyframes flashIn {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.5); }
+  30% { opacity: 1; transform: translate(-50%,-50%) scale(1.1); }
+  60% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.3); }
+}
+
+/* Scrollbar */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.1) transparent; }
+</style>
+</head>
+<body>
+
+<!-- POINT FLASH -->
+<div class="point-flash" id="pointFlash">+0</div>
+
+<!-- HEADER -->
+<div class="header">
+  <span class="brand">HealthSim Hub</span>
+  <span class="header-title">🎯 Bullseye Board</span>
+  <div class="header-right">
+    <span class="score-chip" id="roundLabel">Round 1</span>
+    <button class="reset-btn" onclick="resetGame()">↺ Reset</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: BULLSEYE + TEAMS -->
+  <div class="bullseye-wrap">
+    <div class="bullseye-label">Pick a point zone to pull a question</div>
+
+    <div class="bullseye-container">
+      <!-- Outer ring — 30 pts -->
+      <div class="ring ring-30" id="ring30" onclick="pickQuestion(30)">
+        <div class="ring-pts">30</div>
+        <div class="ring-badge">30 PTS — OUTER</div>
+      </div>
+      <!-- Middle ring — 20 pts -->
+      <div class="ring ring-20" id="ring20" onclick="pickQuestion(20)">
+        <div class="ring-pts">20</div>
+        <div class="ring-badge">20 PTS — MID</div>
+      </div>
+      <!-- Bullseye — 10 pts -->
+      <div class="ring ring-10" id="ring10" onclick="pickQuestion(10)">
+        <div class="ring-pts">10</div>
+      </div>
+    </div>
+
+    <!-- TEAMS -->
+    <div class="teams-bar" id="teamsBar">
+      <!-- rendered by JS -->
+    </div>
+
+    <div class="instructions">
+      <strong>Click a ring</strong> to load a question for that point zone. Select the active team first, then award or deduct points after the answer.
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <!-- QUESTION CARD -->
+    <div class="question-card">
+      <div class="qc-header">
+        <span class="qc-label" id="qcLabel">No question loaded</span>
+        <span class="qc-pts-badge" id="qcBadge"></span>
+      </div>
+      <div class="qc-body" id="qcBody">
+        <div class="qc-empty" id="qcEmpty">
+          <div class="qc-empty-icon">🎯</div>
+          <div class="qc-empty-text">Click any ring on the bullseye<br>to load a question for that zone.</div>
+        </div>
+        <div class="qc-category" id="qcCategory"></div>
+        <div class="qc-question" id="qcQuestion"></div>
+        <div class="qc-answer-wrap" id="qcAnswerWrap">
+          <div class="qc-answer" id="qcAnswer"></div>
+        </div>
+        <div class="btn-row" id="btnRow" style="display:none">
+          <button class="btn btn-reveal" id="btnReveal" onclick="revealAnswer()">👁 Reveal Answer</button>
+          <button class="btn btn-correct" id="btnCorrect" onclick="awardPoints(true)">✓ Correct</button>
+          <button class="btn btn-wrong" id="btnWrong" onclick="awardPoints(false)">✕ Wrong</button>
+          <button class="btn btn-next" id="btnNext" onclick="clearQuestion()">→ Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTION BANK -->
+    <div class="bank-card">
+      <div class="bank-header" onclick="toggleBank()">
+        <span class="bank-title">📚 Question Bank</span>
+        <span class="bank-toggle" id="bankToggle">▾</span>
+      </div>
+      <div class="bank-body" id="bankBody">
+        <!-- Tabs -->
+        <div class="bank-tabs">
+          <button class="bank-tab active-pts30" id="tab30" onclick="switchTab(30)">30 PTS</button>
+          <button class="bank-tab" id="tab20" onclick="switchTab(20)">20 PTS</button>
+          <button class="bank-tab" id="tab10" onclick="switchTab(10)">10 PTS</button>
+        </div>
+        <!-- List -->
+        <div class="q-list" id="qList"></div>
+        <!-- Add form -->
+        <div class="add-q-form">
+          <input type="text" id="newQ" placeholder="Add a question…">
+          <input type="text" id="newA" placeholder="Answer…">
+          <input type="text" id="newCat" placeholder="Category (e.g. Phlebotomy, Vitals…)">
+          <button class="btn-add" onclick="addQuestion()">+ Add Question</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOW TO PLAY -->
+    <div class="how-card">
+      <div class="how-title">How to Play</div>
+      <ul class="how-list">
+        <li>Select the active team by clicking their score card</li>
+        <li>Click outer ring (30 pts) for harder questions</li>
+        <li>Click middle ring (20 pts) for medium questions</li>
+        <li>Click the bullseye center (10 pts) for easier warm-up questions</li>
+        <li>Reveal answer, then mark correct or wrong</li>
+        <li>Add your own questions to any zone below</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DEFAULT QUESTIONS ──
+const defaultQuestions = {
+  30: [
+    { q: "A patient's blood pressure is 148/94. What classification is this, and what should the MA do?", a: "Stage 2 hypertension. Document, notify provider, recheck per protocol.", cat: "Vitals" },
+    { q: "What is the order of draw, and why does it matter?", a: "Yellow, Light Blue, Red, Gold, Light Green, Green, Lavender, Gray. Prevents additive carryover contamination.", cat: "Phlebotomy" },
+    { q: "A patient refuses their scheduled injection. What are the MA's legal and ethical obligations?", a: "Respect autonomy, document refusal, notify provider. Never force or coerce.", cat: "Ethics & Law" },
+    { q: "What is the difference between medical asepsis and surgical asepsis?", a: "Medical asepsis reduces/removes pathogens (clean technique). Surgical asepsis eliminates all organisms (sterile technique).", cat: "Infection Control" },
+    { q: "An EKG shows a wide, bizarre QRS complex. What should the MA suspect and do?", a: "Possible ventricular dysrhythmia. Do not leave patient — notify provider immediately.", cat: "EKG" },
+    { q: "What are the 5 Rights of medication administration and 3 Checks?", a: "Right patient, drug, dose, route, time. Check when pulling, preparing, and before giving.", cat: "Medications" },
+  ],
+  20: [
+    { q: "What tube color is used for a CBC and what additive does it contain?", a: "Lavender/purple — EDTA, prevents clotting to preserve cells.", cat: "Phlebotomy" },
+    { q: "Name three abnormal vital sign findings that require immediate provider notification.", a: "Any two of: SBP >180 or <90, pulse >120 or <50, SpO2 <94%, temp >104°F, RR >24.", cat: "Vitals" },
+    { q: "What does HIPAA stand for and name two patient rights under it?", a: "Health Insurance Portability & Accountability Act. Right to access records, right to request amendment.", cat: "HIPAA" },
+    { q: "What is the difference between a CPT code and an ICD-10 code?", a: "CPT = what was done (procedure). ICD-10 = why it was done (diagnosis).", cat: "Billing" },
+    { q: "What steps must the MA take to verify patient identity?", a: "Two identifiers: full name + date of birth (or MRN). Never room number or verbal confirmation alone.", cat: "Patient Care" },
+    { q: "What is the chain of infection and how can it be broken?", a: "Agent, reservoir, portal of exit, mode of transmission, portal of entry, host. Break by handwashing, PPE, sterilization.", cat: "Infection Control" },
+  ],
+  10: [
+    { q: "What does BP stand for?", a: "Blood Pressure", cat: "Abbreviations" },
+    { q: "Normal adult resting pulse rate range?", a: "60–100 beats per minute", cat: "Vitals" },
+    { q: "What does EKG stand for?", a: "Electrocardiogram", cat: "Abbreviations" },
+    { q: "What color tube is used for blood cultures?", a: "Yellow/SPS — drawn first", cat: "Phlebotomy" },
+    { q: "What does PRN mean?", a: "As needed (pro re nata)", cat: "Abbreviations" },
+    { q: "Normal adult respiratory rate?", a: "12–20 breaths per minute", cat: "Vitals" },
+    { q: "What does STAT mean?", a: "Immediately / right away", cat: "Abbreviations" },
+    { q: "What does NPO mean?", a: "Nothing by mouth", cat: "Abbreviations" },
+  ]
+};
+
+// ── STATE ──
+let questions = JSON.parse(JSON.stringify(defaultQuestions));
+let teams = [
+  { name: "Team 1", score: 0 },
+  { name: "Team 2", score: 0 },
+  { name: "Team 3", score: 0 },
+];
+let activeTeam = 0;
+let currentQ = null;
+let currentPts = 0;
+let round = 1;
+let bankTab = 30;
+let usedQ = { 10: [], 20: [], 30: [] };
+
+// ── INIT ──
+renderTeams();
+renderQList();
+
+function renderTeams() {
+  const bar = document.getElementById('teamsBar');
+  bar.innerHTML = teams.map((t, i) => `
+    <div class="team-card ${i === activeTeam ? 'active' : ''}" onclick="setActiveTeam(${i})">
+      <div class="team-name">${t.name}</div>
+      <div class="team-score">${t.score}</div>
+    </div>
+  `).join('');
+}
+
+function setActiveTeam(i) {
+  activeTeam = i;
+  renderTeams();
+}
+
+// ── PICK QUESTION ──
+function pickQuestion(pts) {
+  const pool = questions[pts];
+  if (!pool || pool.length === 0) {
+    showToast('No questions in this zone! Add some below. ↓');
+    return;
+  }
+  const available = pool.filter((_, i) => !usedQ[pts].includes(i));
+  const source = available.length > 0 ? available : pool;
+  if (available.length === 0) usedQ[pts] = [];
+  const idx = Math.floor(Math.random() * source.length);
+  const realIdx = pool.indexOf(source[idx]);
+  usedQ[pts].push(realIdx);
+
+  currentQ = pool[realIdx];
+  currentPts = pts;
+
+  // Update UI
+  document.getElementById('qcEmpty').style.display = 'none';
+  const cat = document.getElementById('qcCategory');
+  cat.textContent = currentQ.cat;
+  cat.classList.add('show');
+
+  const qEl = document.getElementById('qcQuestion');
+  qEl.textContent = currentQ.q;
+  qEl.classList.add('show');
+
+  document.getElementById('qcAnswer').classList.remove('show');
+  document.getElementById('qcAnswerWrap').classList.remove('show');
+
+  const badge = document.getElementById('qcBadge');
+  badge.textContent = pts + ' PTS';
+  badge.className = `qc-pts-badge pts-${pts} show`;
+
+  document.getElementById('qcLabel').textContent = `Question · ${currentQ.cat}`;
+
+  const btnRow = document.getElementById('btnRow');
+  btnRow.style.display = 'flex';
+  document.getElementById('btnReveal').style.display = 'flex';
+  document.getElementById('btnCorrect').classList.remove('show');
+  document.getElementById('btnWrong').classList.remove('show');
+  document.getElementById('btnNext').classList.remove('show');
+
+  // Pulse ring
+  const ring = document.getElementById('ring' + pts);
+  ring.classList.add('pulse');
+  setTimeout(() => ring.classList.remove('pulse'), 600);
+}
+
+// ── REVEAL ANSWER ──
+function revealAnswer() {
+  if (!currentQ) return;
+  document.getElementById('qcAnswer').textContent = currentQ.a;
+  document.getElementById('qcAnswer').classList.add('show');
+  document.getElementById('qcAnswerWrap').classList.add('show');
+  document.getElementById('btnReveal').style.display = 'none';
+  document.getElementById('btnCorrect').classList.add('show');
+  document.getElementById('btnWrong').classList.add('show');
+  document.getElementById('btnNext').classList.add('show');
+}
+
+// ── AWARD POINTS ──
+function awardPoints(correct) {
+  if (!currentQ) return;
+  if (correct) {
+    teams[activeTeam].score += currentPts;
+    flashPoints('+' + currentPts);
+    showToast(`✓ ${teams[activeTeam].name} +${currentPts} pts`);
+  } else {
+    showToast(`✕ No points awarded`);
+  }
+  renderTeams();
+  document.getElementById('btnCorrect').classList.remove('show');
+  document.getElementById('btnWrong').classList.remove('show');
+}
+
+// ── CLEAR QUESTION ──
+function clearQuestion() {
+  currentQ = null;
+  document.getElementById('qcEmpty').style.display = 'flex';
+  document.getElementById('qcCategory').classList.remove('show');
+  document.getElementById('qcQuestion').classList.remove('show');
+  document.getElementById('qcAnswer').classList.remove('show');
+  document.getElementById('qcAnswerWrap').classList.remove('show');
+  document.getElementById('qcBadge').classList.remove('show');
+  document.getElementById('qcLabel').textContent = 'No question loaded';
+  document.getElementById('btnRow').style.display = 'none';
+  document.getElementById('btnCorrect').classList.remove('show');
+  document.getElementById('btnWrong').classList.remove('show');
+  document.getElementById('btnNext').classList.remove('show');
+}
+
+// ── RESET ──
+function resetGame() {
+  teams = teams.map(t => ({ ...t, score: 0 }));
+  activeTeam = 0;
+  round = 1;
+  usedQ = { 10: [], 20: [], 30: [] };
+  document.getElementById('roundLabel').textContent = 'Round 1';
+  renderTeams();
+  clearQuestion();
+  showToast('Game reset! Ready to play.');
+}
+
+// ── FLASH POINTS ──
+function flashPoints(txt) {
+  const el = document.getElementById('pointFlash');
+  el.textContent = txt;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 800);
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── BANK ──
+function toggleBank() {
+  const body = document.getElementById('bankBody');
+  const toggle = document.getElementById('bankToggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+function switchTab(pts) {
+  bankTab = pts;
+  ['tab30','tab20','tab10'].forEach(id => {
+    document.getElementById(id).className = 'bank-tab';
+  });
+  const p = pts === 30 ? 30 : pts === 20 ? 20 : 10;
+  document.getElementById('tab' + p).className = `bank-tab active-pts${p}`;
+  renderQList();
+}
+
+function renderQList() {
+  const list = document.getElementById('qList');
+  const qs = questions[bankTab] || [];
+  if (qs.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,.25);text-align:center;padding:12px">No questions yet. Add one below!</div>';
+    return;
+  }
+  list.innerHTML = qs.map((q, i) => `
+    <div class="q-item">
+      <div class="q-item-num">${i+1}</div>
+      <div>
+        <div class="q-item-text">${q.q}</div>
+        <div class="q-item-ans">→ ${q.a}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addQuestion() {
+  const qEl = document.getElementById('newQ');
+  const aEl = document.getElementById('newA');
+  const cEl = document.getElementById('newCat');
+  const q = qEl.value.trim();
+  const a = aEl.value.trim();
+  const cat = cEl.value.trim() || 'General';
+  if (!q || !a) { showToast('Please enter both a question and an answer.'); return; }
+  questions[bankTab].push({ q, a, cat });
+  qEl.value = ''; aEl.value = ''; cEl.value = '';
+  renderQList();
+  showToast(`Question added to ${bankTab} PTS zone ✓`);
+}
+</script>
+</body>
+</html>
